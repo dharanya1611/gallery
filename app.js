@@ -366,8 +366,7 @@ address:user.walletAddress,
 
     app.get('/archive', (req, res) =>{
 
-        user.name="",
-        console.log(user.name)
+     
         res.render('archive',{
 
             
@@ -393,7 +392,7 @@ app.get('/seed', function (req, res, next) {
     // console.log("file",file)
     // res.download(file); 
     
-      res.render('archive')
+    //   res.render('archive')
     
 
 
