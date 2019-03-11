@@ -1,0 +1,58 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"> 
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+
+<!--Table-->
+<div class="col-xs-8">
+  
+<!-- <h3> <%=name%> </h3>
+<h4> Contract Address : <a href="http://adhichain.info/addr/<%=address%>"><%=address%></a></h4> -->
+
+<h4> List </h4>
+<hr>
+
+<!-- <%=name%>
+<%=address%> -->
+<table id="demo" class="table table-striped table-hover table-sm table-bordered">
+<!--Table head-->
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Price</th>
+      <!-- <th>Description</th>
+      <th>Image file</th> -->
+      <!-- <th>Price </th> -->
+      <!-- <th>Owner</th> -->
+    </tr>
+  </thead>
+  <!--Table head-->
+  <!--Table body-->
+  <tbody>
+    <% 
+    sno = 1;
+    tokens.forEach(function(token) { %>
+    <tr>
+      <th scope="row"><%=sno++%></th>
+      <td><%=token[0]%></td>
+      <td><%=token[1]%></td>
+      <td><%=token[2]%></td>
+      <!-- <td><%=token[3]%></td>
+      <td><%=token[4]%></td> -->
+ <!--      <td><%=token[2]%></td> -->
+      <!-- <td><%=token[3]%></td> -->
+   
+    </tr>
+    <% }); %>
+  </tbody>
+  <!--Table body-->
+ <script>
+   
+ 
+ </script>
+ 
+</table>
+<!--Table-->
+</div>
+
