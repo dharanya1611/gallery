@@ -28,13 +28,7 @@
         <div class="yummy-load"></div>
     </div>
 
-    <!-- Background Pattern Swither -->
-    <!-- <div id="pattern-switcher">
-        Bg Pattern
-    </div>
-    <div id="patter-close">
-        <i class="fa fa-times" aria-hidden="true"></i>
-    </div> -->
+ 
 
     <!-- ****** Top Header Area Start ****** -->
     <div class="top_header_area">
@@ -99,34 +93,34 @@
     <!-- ****** Header Area End ****** -->
 
 <section>
-
+    <div class="error" ><%=error%></div> <br>
     <div class="single-widget-area newsletter-widget">
       
         <div class="newsletter-form" style="width:100%; padding-left:25%; padding-right:25%;">
             <form action="/register" method="post"  >
-                <div>
-                <input type="string" name="name" id="name" placeholder="Your name" data-required-msg='Username is required' required>
+                <div style="width:80%; padding-left:18%;" >
+                <input type="string" name="name" id="name" placeholder="Your name"  data-required-msg='Username is required'  required>
             </div><br>
-            <div>
-                <input type="email" name="email" id="email" placeholder="Your email" data-required-msg='email is required' required>
+            <div style="width:80%; padding-left:18%;" >
+                <input type="email" name="email" id="email" placeholder="Your email" data-required-msg='email is required' required >
             </div><br>
-            <div>
+            <div style="width:80%; padding-left:18%;" >
                 <input type="password" name="password" id="password" placeholder="Your password" data-required-msg='password is required' required>
                 </div><br>
-                <div>
-                <input type="password" name="confirmpassword" id="confirmpassword" placeholder="Your confirm password" data-required-msg='password is required' required>
+                <div style="width:80%; padding-left:18%;" >
+                <input type="password" name="confirmpassword" id="confirmpassword" placeholder="Your confirm password" data-required-msg='password is required' required >
                 
                 </div>
                 <!-- <button type="submit"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button> -->
             
         </div>
 
-        <div style="padding-left:35% ">
+        <div style="padding-left:35%">
                 <button type="submit"   class="btn contact-btn"   >register</button>&emsp;&emsp;
                 <!-- <button type="submit" class="btn contact-btn"><a href="login.html" >login</a></button> -->
             </div>
 
-        <div class="error" ><%=error%></div>  
+      
      
 
                                      </form>

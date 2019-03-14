@@ -133,16 +133,17 @@
 
     <section>
 
+        <div class="error"><%=error%></div>
         <div class="single-widget-area newsletter-widget">
 
             <div class="newsletter-form" style="width:100%; padding-left:35%; padding-right:25%;">
-                <form action="/archive" method="post">
+                <form action="/login" method="post">
 
                     <div>
-                        <input type="email" name="email" id="email" style="width:60%" placeholder="Your email" required>
+                        <input type="email" name="email" id="email" style="width:60%" placeholder="Your email" >
                     </div><br>
                     <div>
-                        <input type="password" name="password" id="password"style="width:60%"  placeholder="Your password" required>
+                        <input type="password" name="password" id="password"style="width:60%"  placeholder="Your password" >
                     </div>               
 
 
@@ -155,7 +156,6 @@
                     <button type="submit" class="btn contact-btn">login</button>
                    
                 </div>
-<div class="error"><%=error%></div>
                 
             </form>
         </div>

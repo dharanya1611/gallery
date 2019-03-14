@@ -2,11 +2,16 @@ const express = require('express')
 var bodyParser = require('body-parser');
 const verify = require('./middleware/verify');
 const walletUtils = require('./utils/wallet');
+const http = require('http');
+const fs = require('fs');
+    var QRCode = require('qrcode')
+
 const encrypt = require('./utils/crypto');
 const lightwallet = require("eth-lightwallet");
 const app = express()
-var QRCode = require('qrcode')
+
 const User = require('./models/user');
+const Docs = require('./models/docs');
 const mongoose = require('mongoose')
 const path = require('path');
 const port = 3000
@@ -15,6 +20,11 @@ var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
 var config = require('./config');
 var toastr = require('express-toastr');
+
+app.use('/uploads', express.static(path.join(__dirname + '/uploads')));
+
+var routes = require('./routes/entry');
+app.use(routes);
 app.use(toastr());
 
 app.use(bodyParser.json());
@@ -91,66 +101,60 @@ app.post('/signin',function (req, res){
 
 res.render('login',{
 
-    error:"",email:"",password:""
+    error:"",email:"",password:"", 
 })
 })
-app.post('/register', function (req, res, next) {
+app.post('/register', (req, res,next)=> {
  
 
-        if (!req.body.hasOwnProperty('email')) {
-            res.json({
-                message: 'Email is Required.'
-            });
-            // next({
-            //     message: 'Email is Required.',
-            //     status: 400,
-            //     type: "Failure"
-            // })
-        };
-        if (!req.body.hasOwnProperty('name')) {
-            res.json({
-                message: 'name is Required.'
-            });
-            // next({
-            //     message: 'username is Required.',
-            //     status: 400,
-            //     type: "Failure"
-            // })
-        };
-        if (!req.body.hasOwnProperty('password')) {
-            res.json({
-                message: 'Password is Required.'
-            });
-            // next({
-            //     message: 'Password is Required.',
-            //     status: 400,
-            //     type: "Failure"
-            // })
-        };
+        if(!req.body.email)
+      {
+         error= 'email is required...' 
+               
+        //   res.json({ message: 'This Email already Exists.', status: 400, type: "Failure"})
+            res.render('register',{
+
+                error:error
+                       })
+                    }
+        if (!req.body.name)
+         {
+             error='name is required...',           
+        //  res.json({ message: 'This Email already Exists.', status: 400, type: "Failure"})
+            res.render('register',{
+                error:error
+                       })
+                    }
+        if (!req.body.password)
+         {
+            error='password is required...',   
+        //   res.json({ message: 'This Email already Exists.', status: 400, type: "Failure"})
+            res.render('register',{
+                error:error
+                       })
+        
+                    }
         //  if(!req.body.hasOwnProperty('accountType')) {
         //      next({message: 'Account type is Required.', status:400, type: "Failure"})
         //  };
-        if (req.body.password != req.body.confirmpassword) {
-            res.json({
-                message: 'password and Confirmpassword  is Mismatch.'
-            });
-            next({
-                message: 'password and Confirmpassword  is Mismatch.',
-                status: 400,
-                type: "Failure"
-            })
-        }
-        next();
+        if (req.body.password != req.body.confirmpassword)
+        {
+           error= 'Password and Confirm password are not same....'                
+        //   res.json({ message: 'This Email already Exists.', status: 400, type: "Failure"})
+            res.render('register',{
+
+                error:error
+                       })
+                    }
+                  
+        next()
     },
     
     function (req, res, next) {
-        
+       
         req.body.email = req.body.email.toLowerCase();
-        const { email,  password,  username} = req.body;
-       var error=""
-  
-
- console.log(req.body.email)
+        const { email,  password,  name,confirmpassword} = req.body;
+      
       
         User.findOne({'email':email})
         .then(
@@ -192,7 +196,13 @@ app.post('/register', function (req, res, next) {
                     );
 
                     mydata.save()
-                    
+                    .then( result => {
+                        token = createToken({address: data.address, seed: seedHash, email: email, phrase:password,}, res);
+                        res.json({data, token, seed, status: 200, type: 'Success'});
+                    },err=>{
+                        res.json({message: err, status: 400, type: "Failure"})
+                    }
+                )
         console.log(mydata, "mydtaaa")
 
      
@@ -222,11 +232,14 @@ app.post('/register', function (req, res, next) {
           res.render('seed',{
 
  seedvalue:seed
-        }
+
+ 
+        },
+        
         )
         
         
-          
+       
            
                 }
             },
@@ -243,10 +256,7 @@ app.post('/register', function (req, res, next) {
         // console.log("newuser",mydata.password)
 
         
-            .catch(err => {
-                res.status(400).send("unable to save to database");
-                console.log(err)
-            })
+            
         console.log("email")
 
 
@@ -255,35 +265,36 @@ app.post('/register', function (req, res, next) {
     });
 
 
-app.get('/archive', function (req, res) {
-    res.render( 'archive',{
-
-        error:"",email:"",password:"",name:"",address:""
-    })
 
 
 
-})
+app.post('/login', function (req, res, next) {
+        if (!req.body.email) {
 
-app.post('/archive', function (req, res, next) {
-        if (!('email' in req.body)) {
-
-            res.send("email is required")
-            next({
-                message: 'Email is Required',
-                status: 400,
-                type: 'failure'
-            })
+            error= 'email  is required'  
+            res.render(
+                'login',{
+                 error:error,
+             
+             },
+             console.log('erroe',error)
+         
+           
+             );
 
         };
-        if (!('password' in req.body)) {
+        if (!req.body.password) {
 
-            res.send("password is required")
-            next({
-                message: 'Password is Required',
-                status: 400,
-                type: 'failure'
-            })
+             error= ' password is required'  
+            res.render(
+                'login',{
+                 error:error,
+             
+             },
+             console.log('erroe',error)
+         
+           
+             );
 
         }
         next()
@@ -323,30 +334,30 @@ app.post('/archive', function (req, res, next) {
 
 
                     console.log("login")
+
                     res.render('archive',{
 email:user.email,
 name:user.name,
 address:user.walletAddress,
+id:user.id,
 
-                        user: {
-                            id: user._id,
-                            name: user.name,
-                            email: user.email,
-                            wallet: user.walletAddress,
-                          },
+                      
                          
                     },
                     console.log(user,"usetrhtdd"))
                     
+
+             
+                   
                     User.findOne(({ email: req.body.email })  , function(err, user) {
                         if (err) throw err;
                         console.log(user)
                         console.log("wallwe",user.walletAddress)
                         console.log("eamis",user.email)
                         console.log("name",user.name)
-                    })
+                    }) 
                     
-                    
+                   
                 }
                
             
@@ -360,57 +371,85 @@ address:user.walletAddress,
            
             )
 
-        
+           
     });
     
 
-    app.get('/archive', (req, res) =>{
+    // app.get('/archive', (req, res) =>{
 
      
-        res.render('archive',{
+    //     res.render('archive',{
+
+
 
             
-        })
+    //     })
     
-    });
+    // });
 
 
-app.post('/archive', function (req, res, next) {
+// app.post('/archive', function (req, res, next) {
     
-    User.findById(req.user.walletAddress, function(err, doc) {
-        res.render('archive', {
-            id     : "user.id"
-        });   
+//     User.findById(req.user.walletAddress, function(err, doc) {
+//         res.render('archive', {
+//             id     : "user.id"
+//         });   
         
-        console.log("id",id)
-});
+//         console.log("id",id)
+// });
 
+// })
+
+app.get('/sign',function (req, res, next) {
+    res.render('archive',{
+        error:"",email:"",password:"",name:"",address:"" ,id:""
+    })
+    
 })
-app.get('/seed', function (req, res, next) {
+app.get('/seed/:id', function (req, res, next) {
+    var seeds = req.param('id')
+    console.log(seeds,"seeds")
+
+    
+    
+
+
+    // res.set("Content-Disposition", "attachment;filename=file.csv");
+    //                       res.set("Content-Type", "application/octet-stream");
+    //                       res.sendownloadd(seeds);
+    // var file = __dirname +'/upload-folder/dramaticpenguin.txt';
+    // res.download(file); 
+    // var file = ('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(seeds));
+
     // console.log("valueseed")
     // var file = "seed";
     // console.log("file",file)
     // res.download(file); 
     
     //   res.render('archive')
-    
+   
+               
 
 
     },
 )
 
-
-app.get('/profile/:id',function(req,res){
-    let id=req.params.id
-    console.log(id,"userid")
-    res.render('profile')
-
-
-
-
-
-
-})
+app.get("/profile", function(req, res){
+    user.get(req.id, (error, result) => {
+        if(error) {
+            return response.status(500).send(error);
+        }
+        response.send(result.value);
+    });
+   console.log("email")
+    res.render('profile',{
+        user: req.user,
+      
+    })
+   
+    console.log("name",user) 
+   
+}) 
 app.get('/logout', function(req, res) {
   res.render('login',{
 
@@ -420,98 +459,9 @@ app.get('/logout', function(req, res) {
 
 
 
-  app.get('/entry', function(req, res) {
-    res.render('entry');
-    
-});
+ 
 
-app.post('/entry', function(req, res){
-    fstream = fs.createWriteStream('/public/uploads/' + filename);
-            file.pipe(fstream);
-    
 
-    const details = {}
-    details.to = req.body.recipient;
-    details.id = req.body.id;
-    details.name = req.body.tokenURI;
-    details.price= req.body.price,
-    details.description= req.body.description,
-    details.upload= req.body.upload
-
-    var detailstring = JSON.stringify(details)
-
-    res.json(
-        {
-            message: 'art added',
-            detailstring
-        }
-    );
-
-    console.log("Body...", req.body);
-    
-    to = req.body.recipient;
-    id = parseInt(req.body.id);
-    name = req.body.tokenURI;
-    price = req.body.price;
-    description = req.body.description;
-    upload = req.body.upload;   
-    
-    var privateKey = "4f7a2f30c7fbd017ffc1e70379eb42cf3f8ac28abed3fcb7d754485f39514d9e"         
-    var Tx = require('ethereumjs-tx');
-    var privKey = new Buffer(privateKey, 'hex');
-
-    var rawTransaction =  
-            {  
-                  "nonce":web3.toHex(web3.adh.getTransactionCount(adminAddress)),
-                  "gasPrice":1000000000,
-                  "gasLimit":3000000,
-                  "to":smartContract.address,
-                  "value":"0x00",
-                  "data":smartContract.mintUniqueTokenTo.getData(to, id, name, price, detailstring, upload, {from:adminAddress}),
-                  "chainId":1
-            }
-                var tx = new Tx(rawTransaction);
-                tx.sign(privKey);
-                var serializedTx = tx.serialize();
-                
-                web3.adh.sendRawTransaction('0x' + serializedTx.toString('hex'), function(err, txnno) {
-                    if (!err)
-                            {
-                            console.log("No error", txnno)
-                                res.render('entry', { 
-                                    name: smartContract.name(),
-                                    address: contractAddress,
-
-                                    to: to,
-                                    id: id,
-                                    name: name,
-                                    price: price,
-                                    detailstring: detailstring,
-                                    upload: upload,
-                                    message: txnno
-                                
-                              }); //render
-
-                            }
-                            else {
-                                console.log("err",err)
-                               
-                                res.render('entry', { 
-                                    name: smartContract.name(),
-                                    address: contractAddress,
-
-                                    to: to,
-                                    id: id,
-                                    name: name,
-                                    price: price,
-                                    detailstring: detailstring,
-                                    upload: upload,
-                                    message: err.message
-                              }); //render
-                            }
-                      });
-
-        }); 
     // });
 
 
@@ -548,51 +498,34 @@ app.post('/view', function(req, res){
     //    console.log("jsondetails",JSON.parse(propDetails));
 });
 
-app.get("/getDetails/:id", function(req, res){
-    console.log(req.params);
-    console.log(req.params.id);
-    
-    result = JSON.parse(smartContract.getDetails(req.params.id));
-    res.json(result);
-}) 
 
-app.get('/list', function(req, res){
-    smartContract.totalSupply( function(err, count) 
-    {
-          countToken = count.toNumber()
-          console.log("count...", countToken );
-          
-          var tokensArray = [];
-  
-          for(i=0; i<countToken; i++)
-          {
-            var id = smartContract.tokenByIndex(i).toNumber();
-       
-            var tokenData = [];
-             tokenData[0] = id;
-             tokenData[1] = smartContract.tokenURI(id);
-            //  tokenData[2] = 0;
-            //  tokenData[3] = smartContract.ownerOf(id);
-             tokenData[2] = smartContract.getPrice(id);
-             tokenData[3] = smartContract.getDetails(id);
-           
-            console.log(tokenData);
-            tokensArray.push(tokenData);
-          }
-           res.render('list', {
-            // res.json({ 
-              name: smartContract.name(),
-              address: contractAddress,
-              tokens: tokensArray
-              
-          });
-
-    });
-  
-  });
 
   app.get('/index', function(req, res) {
     res.render('index');
     
+});
+
+
+
+
+app.get('/images', function(req, res) {
+    routes.getImages(function(err, docs) {
+        // console.log("docs",docs)
+    if (err) {
+        throw err;
+        console.log("err",error)
+    }    
+        for (var i = 0; i < docs.length; i++) {
+            console.log("arrlgth",docs)
+            // console.log("Array",arr[i]);
+            // var arrStr = JSON.stringify(arr[i]);
+            // console.log("JsonArray",arrStr);
+            // var id = arrStr[0].name
+            // console.log("ID", id)
+        }
+        res.render('list', {
+              albums: docs           
+          });     
+    });
 });
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
